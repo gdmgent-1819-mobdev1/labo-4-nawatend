@@ -172,6 +172,8 @@ btnMenu.addEventListener("click", function() {
 
 //LOAD
 
+//initiate map
+
 // 1 fetch, ipv van 10 fetches
 function setTenProfilesInLocalStorage() {
   fetch(url, {
@@ -184,23 +186,14 @@ function setTenProfilesInLocalStorage() {
       //Binnen deze functie kan je de json data manipuleren
       //we need name, age, location, foto,
       for (let i = 0; i < 10; i++) {
-        // let profile = [
-        //   data.results[i].name.first,
-        //   data.results[i].dob.age,
-        //   data.results[i].location.city,
-        //   data.results[i].picture.large,
-        //   data.results[i].location.coordinates.longitude,
-        //   data.results[i].location.coordinates.latitude
-        // ];
-
-        let profile = new Profile(
+        let profile = [
           data.results[i].name.first,
           data.results[i].dob.age,
           data.results[i].location.city,
           data.results[i].picture.large,
           data.results[i].location.coordinates.longitude,
           data.results[i].location.coordinates.latitude
-        );
+        ];
 
         arrOfTenProfile.push(profile);
 
@@ -216,9 +209,9 @@ function setTenProfilesInLocalStorage() {
 }
 setTenProfilesInLocalStorage();
 
-for (let i = 1; i <= 10; i++) {
-  console.log(localStorage.getItem("profile" + i));
-}
+// for (let i = 0; i < 10; i++) {
+//   console.log(JSON.parse(localStorage.getItem("profile" + i)));
+// }
 //Liking en disliking btns
 btnLike.addEventListener("click", function() {
   UpdateProfile("liked");
@@ -249,36 +242,29 @@ function addLikeOfDislikeToProfile(likeStatus) {
 
   let likeOrdislike;
   if (
-    //found liked or dis in profileToUpdate
     profileToUpdate.search("liked") !== -1 ||
     profileToUpdate.search("dis") !== -1
   ) {
-    //found liked in profileToUpdate
     if (profileToUpdate.search("liked") !== -1) {
       profileToUpdate = profileToUpdate.replace("liked", likeStatus);
       console.log("Changed to Dis");
       localStorage.setItem("profile" + profileCounter, profileToUpdate);
     } else {
-      //not found liked in profileToUpdate, so dis
       profileToUpdate = profileToUpdate.replace("dis", likeStatus);
       localStorage.setItem("profile" + profileCounter, profileToUpdate);
     }
   } else {
-    // Not found liked or dis in profileToUpdate
     if (likeStatus === "liked") {
-      likeOrdislike = '","rate":"liked"}';
+      likeOrdislike = '","liked"]';
     } else {
-      likeOrdislike = '","rate":"dis"}';
+      likeOrdislike = '","dis"]';
     }
-    //,"lat":"-83.0340"
-    let index = profileToUpdate.indexOf("}") - 1;
+
+    let index = profileToUpdate.indexOf("]") - 1;
 
     profileToUpdate = profileToUpdate.slice(0, index) + likeOrdislike;
     localStorage.setItem("profile" + profileCounter, profileToUpdate);
-    // let checkProfile = JSON.parse(
-    //   localStorage.getItem("profile" + profileCounter)
-    // );
-    // console.log(checkProfile);
+    console.log(profileToUpdate);
   }
 
   //console.log(profileToUpdate);
@@ -289,6 +275,21 @@ function addLikeOfDislikeToProfile(likeStatus) {
   // console.log(profileToUpdate.slice(komma4thIndex - 1, profileToUpdate.length));
   // console.log(index);
   // console.log(localStorage.getItem("profile" + profileCounter));
+}
+
+//go to next profile from localstorage
+function goToNextProfile() {
+  if (profileCounter < localStorage.length) {
+    if (nextGroupOfProfileCounter === 9) {
+      setTenProfilesInLocalStorage();
+
+      nextGroupOfProfileCounter = 1;
+    } else {
+      nextGroupOfProfileCounter++;
+    }
+    profileCounter++;
+    showProfile();
+  }
 }
 
 function UpdateProfile(likeStatus) {
@@ -334,97 +335,46 @@ function showVisitedProfiles() {
     div.innerText = "Like Or Dislike Profiles To See History";
     listVisitedProfiles.appendChild(div);
   } else {
-    //start of key name: profile1
     for (let i = 1; i < profileCounter; i++) {
-      let profileToUpdate = JSON.parse(localStorage.getItem("profile" + i));
-      console.log(i + "------------");
+      let profileToUpdate = JSON.parse(
+        localStorage.getItem(localStorage.key(i))
+      );
+
+      //console.log(profileToUpdate[3]);
+
       let div = document.createElement("div");
       let img = document.createElement("img");
       let divName = document.createElement("div");
       let divChangeStatus = document.createElement("div");
-      let divLike = document.createElement("div");
-      let divDis = document.createElement("div");
-
-      divLike.setAttribute("class", "list__visitedprofiles--profile-btnLike");
-      divDis.setAttribute("class", "list__visitedprofiles--profile-btnDis");
-      divLike.innerHTML = "<i class='far fa-heart'></i>";
-      divDis.innerHTML = "<i class='far fa-thumbs-down'></i>";
 
       div.setAttribute("class", "list__visitedprofiles--profile");
       img.setAttribute("class", "list__visitedprofiles--profile-image");
-      img.setAttribute("src", profileToUpdate.imageurl);
+      img.setAttribute("src", profileToUpdate[3]);
       divName.setAttribute("class", "list__visitedprofiles--profile-name");
+      divChangeStatus.setAttribute("class", "list__visitedprofile--change");
+      divChangeStatus.innerText = "Change";
 
-      if (profileToUpdate.rate === "liked") {
-        divChangeStatus.setAttribute(
-          "class",
-          "list__visitedprofile--status-liked"
-        );
-      } else {
-        divChangeStatus.setAttribute(
-          "class",
-          "list__visitedprofile--status-dis"
-        );
-      }
-
-      divName.textContent = profileToUpdate.name;
-      div.appendChild(divDis);
-      div.appendChild(divLike);
+      divName.textContent = profileToUpdate[0];
       div.appendChild(img);
       div.appendChild(divName);
       div.appendChild(divChangeStatus);
       listVisitedProfiles.appendChild(div);
       n++;
-
       //changeMindLikeOrDis(profileToUpdate);
     }
-  }
-
-  btnsLike = [
-    ...document.getElementsByClassName("list__visitedprofiles--profile-btnLike")
-  ];
-  btnsDis = [
-    ...document.getElementsByClassName("list__visitedprofiles--profile-btnDis")
-  ];
-  // btnsLike.forEach(btnLike => {
-  //   btnLike.addEventListener("click", () => {
-  //     console.log(" hello thsdnf");
-  //   });
-  // });
-
-  for (let i = 0; i < btnsLike.length; i++) {
-    btnsLike[i].addEventListener("click", () => {
-      let profileToUpdate = localStorage.getItem("profile" + (i + 1));
-      //-1 = not found
-      if (profileToUpdate.search("dis") !== -1) {
-        profileToUpdate = profileToUpdate.replace("dis", "liked");
-        //console.log("Changed to liked: " + profileToUpdate);
-        localStorage.setItem("profile" + (i + 1), profileToUpdate);
-        showVisitedProfiles();
-      }
-    });
-  }
-
-  for (let i = 0; i < btnsDis.length; i++) {
-    btnsDis[i].addEventListener("click", () => {
-      let profileToUpdate = localStorage.getItem("profile" + (i + 1));
-      //-1 = not found
-      if (profileToUpdate.search("liked") !== -1) {
-        profileToUpdate = profileToUpdate.replace("liked", "dis");
-        //console.log("Changed to dis: " + profileToUpdate);
-        localStorage.setItem("profile" + (i + 1), profileToUpdate);
-        showVisitedProfiles();
-      }
-    });
   }
 }
 // Change Your Mind with like or Dis
 
 function changeMindLikeOrDis(profileToUpdate) {
   // to  do : make it good
-  let profileToUpdate = JSON.stringify(profileToUpdate);
+  profileToUpdate = JSON.stringify(profileToUpdate);
   //-1 = not found
   if (profileToUpdate.search("liked") !== -1) {
+    let divStatus = document.createElement("div");
+
+    divStatus.classList("list__visitedprofiles--liked");
+    divStatus.innerHTML = '<i class="far fa-heart"></i>';
     profileToUpdate = profileToUpdate.replace("liked", "dis");
     //console.log("Changed to Dis: " + profileToUpdate);
     localStorage.setItem("profile" + i, profileToUpdate);
@@ -443,9 +393,8 @@ function showLocalStorageList() {
   for (let key in localStorage) {
     let p = document.createElement("p");
 
-    p.textContent = key + " : " + localStorage.getItem(key);
+    p.textContent = key + " : " + JSON.parse(localStorage.getItem(key));
     listLocalStorage.appendChild(p);
-    //console.log(JSON.parse(localStorage.getItem(key)));
   }
   // console.log(localStorage.length);
 }

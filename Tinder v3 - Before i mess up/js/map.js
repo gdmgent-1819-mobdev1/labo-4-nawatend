@@ -1,28 +1,14 @@
 //initiate map
 //map
-let profileLong = 5;
-let profileLat = 5;
-
-let userLat = "";
-let userLong = "";
-
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(function(position) {
-    userLat = position.coords.latitude;
-    userLong = position.coords.longitude;
-    console.log("got geo location");
-  });
-} else {
-  console.log("No GEO LOCATION FROM USER");
-}
-
+let long = 5;
+let lat = 5;
 mapboxgl.accessToken =
   "pk.eyJ1IjoibmF3YW5ndGVuZCIsImEiOiJjam40aXZhN2EwcDNrM3FxeWR1cXpwNDQxIn0.QJHY3Gs8J2UaypqDj77NhA";
 var map = new mapboxgl.Map({
   container: "map",
   style: "mapbox://styles/mapbox/outdoors-v10",
   zoom: 10,
-  center: [profileLong, profileLat] // starting position
+  center: [long, lat] // starting position
 });
 
 //**---=====Show or Hide map==================== MAPBOX  MAAAAP---------------------------------- */
@@ -41,15 +27,15 @@ btnMap.addEventListener("click", function() {
   console.log("btnMap clicked");
 });
 //add layer with circle
-function drawCircleAndFly() {
+function drawCircleOnMap() {
   if (map.loaded()) {
     // r = radius
     let r = 100;
-    // Click fast makes map.loaded return false
+    // console.log("this is map loaded " + map.loaded());
     map.flyTo({
-      center: [profileLong, profileLat],
+      center: [long, lat],
       zoom: 10,
-      speed: 10 // make the flying fast
+      speed: 5 // make the flying fast
     });
 
     //console.log(long + " ++++" + lat);
@@ -62,7 +48,7 @@ function drawCircleAndFly() {
           type: "Feature",
           geometry: {
             type: "Point",
-            coordinates: [profileLong, profileLat]
+            coordinates: [long, lat]
           }
         }
       },
@@ -75,22 +61,5 @@ function drawCircleAndFly() {
 
     //unable to zoom on map
     map.scrollZoom.disable();
-
-    console.log(
-      "ProfileLat: " +
-        profileLat +
-        " ProfileLong: " +
-        profileLong +
-        "userLat: " +
-        userLat +
-        " userLong: " +
-        userLong
-    );
-    //distance between user and profile
-    let distanceKM = distance(profileLat, profileLong, userLat, userLong, "K");
-    document.getElementsByClassName("distance")[0].textContent =
-      distanceKM + " KM";
-  } else {
-    console.log("Map Not loaded yet");
   }
 }
